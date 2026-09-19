@@ -1,0 +1,41 @@
+silver_transactions:
+  unique_key: _scd_unique_id
+  checks:
+    # Surrogate key = md5(trans_num || unix_micros(trans_date_trans_time)).
+    # If this is ever not unique the dedup in 2.4 is silently dropping real rows.
+    - column: _scd_unique_id
+      tests: [not_null, unique]
+      severity: error
+    - column: trans_num
+      tests: [not_null, unique]
+      severity: error
+    - column: amt
+      tests: [not_null]
+      expression: "amt > 0 AND amt < 100000"
+      severity: error
+    - column: gender
+      accepted_values: [M, F]
+      severity: warn
+    - column: is_fraud
+      accepted_values: [0, 1]
+      severity: error
+    - column: cust_lat
+      expression: "cust_lat BETWEEN -90 AND 90"
+      severity: warn
+    - column: cust_long
+      expression: "cust_long BETWEEN -180 AND 180"
+      severity: warn
+    - column: state
+      expression: "state RLIKE '^[A-Z]{2}$'"
+      severity: warn
+    - column: zip
+      expression: "zip RLIKE '^[0-9]{5}$'"
+      severity: warn
+    - column: dob
+      expression: "dob BETWEEN '1900-01-01' AND '2010-01-01'"
+      severity: warn
+    # Names are checked here, before encryption — once first_name is ciphertext
+    # "does this look like a name" stops working.
+    - column: name_parse_status
+      accepted_values: [ok, single_token, multi_token, empty, null_source]
+      severity: warn

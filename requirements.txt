@@ -1,0 +1,29 @@
+# Credit Card Fraud ETL — pipeline dependencies
+#
+# Setup (one time):
+#   python3 -m venv .venv
+#   ./.venv/bin/python -m pip install -r requirements.txt
+#   ./.venv/bin/python -m ipykernel install --user \
+#       --name cc-fraud-etl --display-name "Python (cc-fraud-etl)"
+#
+# Then select the "Python (cc-fraud-etl)" kernel in the notebook.
+#
+# Versions are pinned to what this pipeline was built and verified against, so a
+# reviewer re-running the notebook gets identical behaviour.
+
+# --- pipeline ---
+pyspark==4.2.0          # engine; needs a JDK on PATH (verified on Java 23)
+kagglehub==1.0.2        # dataset download -> ~/.cache/kagglehub
+python-dotenv==1.2.3    # loads PII_SALT / PII_AES_KEY from .env (imports as `dotenv`)
+PyYAML==6.0.3           # parses dq_rules.yaml (imports as `yaml`)
+
+# --- gold layer: toPandas() + charts (section 5) ---
+# pandas is capped below 3.0 deliberately: PySpark 4.2 emits
+# "PySpark does not yet fully support pandas >= 3.0.0" and recommends < 3.0.0.
+# The floor is PySpark's own hard requirement — 1.x raises UNSUPPORTED_PACKAGE_VERSION.
+pandas>=2.2.0,<3.0.0    # resolved to 2.3.3
+pyarrow==25.0.1         # arrow path behind toPandas()
+matplotlib==3.11.2      # visualisation
+
+# --- notebook tooling ---
+ipykernel==7.3.0        # registers the venv as a Jupyter kernel
